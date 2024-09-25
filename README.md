@@ -283,7 +283,7 @@ export interface IProductItems {
     name: string,               // Название товара
     description: string,        // Описание товара
     price: number | null,       // Цена товара
-    image: string,           // Изображение товара
+    image: string,              // Изображение товара
     category: string,           // Категория товара
 }
 ```
@@ -297,7 +297,7 @@ export interface IOrderItems {
     email: string;              // Электронная почта клиента
     phone: string;              // Телефонный номер клиента
     totalPrice: number | null;  // Общая стоимость товаров в корзине
-    items: IProductItems[];          // Массив товаров в корзине
+    items: IProductItems[];     // Массив товаров в корзине
 }
 ```
 
@@ -313,7 +313,7 @@ export type TPaymentOption = 'online' | 'offline';  // Способ оплаты
 export type TProduct = {
     category: IProductItems['category']; // Категория товара
     name: IProductItems['name'];         // Название товара
-    image: IProductItems['image']; // Изображение товара
+    image: IProductItems['image'];       // Изображение товара
     price: IProductItems['price'];       // Цена товара
 }
 ```
@@ -325,7 +325,7 @@ export type TProductPopup = {
     category: IProductItems['category'];       // Категория товара
     name: IProductItems['name'];               // Название товара
     description: IProductItems['description']; // Описание товара
-    image: IProductItems['image'];       // Изображение товара
+    image: IProductItems['image'];             // Изображение товара
     price: IProductItems['price'];             // Цена товара
 }
 ```
