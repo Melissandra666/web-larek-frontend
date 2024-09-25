@@ -286,26 +286,26 @@ export interface IPage {
 ### Интерфейс каталога товаров
 
 ```
-export interface IProductItems {
-    id: string,                 // Уникальный идентификатор товара
-    name: string,               // Название товара
-    description: string,        // Описание товара
-    price: number | null,       // Цена товара
-    image: string,              // Изображение товара
-    category: string,           // Категория товара
+export interface IProduct {
+    id: string;                 // Уникальный идентификатор товара
+    name: string;               // Название товара
+    description: string;        // Описание товара
+    price: number | null;       // Цена товара
+    image: string;              // Изображение товара
+    category: string;           // Категория товара
 }
 ```
 
 ### Интерфейс корзины
 
 ```
-export interface IOrderItems {
+export interface IOrder {
     payment: TPaymentOption;    // Способ оплаты заказа
     address: string;            // Адрес доставки
     email: string;              // Электронная почта клиента
     phone: string;              // Телефонный номер клиента
     totalPrice: number | null;  // Общая стоимость товаров в корзине
-    items: IProductItems[];     // Массив товаров в корзине
+    items: IProduct[];          // Массив товаров в корзине
 }
 ```
 
@@ -318,50 +318,29 @@ export type TPaymentOption = 'online' | 'offline';  // Способ оплаты
 ### Тип данных для каталога товаров на главной странице
 
 ```
-export type TProduct = {
-    category: IProductItems['category']; // Категория товара
-    name: IProductItems['name'];         // Название товара
-    image: IProductItems['image'];       // Изображение товара
-    price: IProductItems['price'];       // Цена товара
-}
+export type TProductBase = Pick<IProduct, 'category' | 'name' | 'image' | 'price'>; // Базовые поля товара
 ```
 
 ### Тип данных для карточки продукта
 
 ```
-export type TProductPopup = {
-    category: IProductItems['category'];       // Категория товара
-    name: IProductItems['name'];               // Название товара
-    description: IProductItems['description']; // Описание товара
-    image: IProductItems['image'];             // Изображение товара
-    price: IProductItems['price'];             // Цена товара
-}
+export type TProductPopup = Pick<IProduct, 'category' | 'name' | 'description' | 'image' | 'price'>; // Поля товара для попапа
 ```
 
 ### Тип данных для заказа в корзине
 
 ```
-export type TOrderBasket = {
-    name: IProductItems['name'];           // Название товара
-    price: IProductItems['price'];         // Цена за единицу товара
-    totalPrice: IOrderItems['totalPrice']; // Общая стоимость заказа
-}
+export type TOrderBasket = Pick<IProduct, 'name' | 'price'> & Pick<IOrder, 'totalPrice'>; // Поля товара и заказа для корзины
 ```
 
 ### Тип данных для оплаты
 
 ```
-export type TOrderPayment = {
-    payment: IOrderItems['payment'];    // Способ оплаты
-    address: IOrderItems['address'];    // Адрес доставки
-}
+export type TOrderPayment = Pick<IOrder, 'payment' | 'address'>; // Поля для способа оплаты и адреса
 ```
 
 ### Тип данных для контактной информации 
 
 ```
-export type TOrderContactsInformation = {
-    email: IOrderItems['email'];  // Электронная почта
-    phone: IOrderItems['phone'];  // Номер телефона
-}
+export type TOrderContactsInformation = Pick<IOrder, 'email' | 'phone'>; // Поля для контактной информации
 ```
