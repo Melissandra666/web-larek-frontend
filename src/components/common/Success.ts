@@ -1,43 +1,38 @@
-import { Component } from '../base/Components';  // Импорт базового класса компонента
-import { ensureElement } from '../../utils/utils';  // Импорт функции для безопасного получения DOM-элементов
+import { Component } from '../base/Components'; // Импорт базового класса компонента
+import { ensureElement } from '../../utils/utils'; // Импорт утилиты для поиска элементов в DOM
+import { ISuccess } from '../../types'; // Импорт интерфейса для данных об успешном заказе
 
-// Интерфейс для данных успешного завершения
-interface ISuccess {
-    total: number;  // Общая сумма успешного заказа
-}
-
-// Интерфейс для действий, связанных с успешным завершением
+// Интерфейс для действий, связанных с успешным завершением заказа
 interface ISuccessActions {
-    onClick: () => void;  // Метод, который будет вызываться при клике
+	onClick: () => void; // Обработчик события клика
 }
 
-// Класс Success, наследующий от компонента
+// Класс компонента для отображения сообщения об успешном завершении заказа
 export class Success extends Component<ISuccess> {
-    protected _close: HTMLElement;  // Элемент кнопки закрытия
-    protected _description: HTMLElement;  // Элемент для описания успешного завершения
+	protected _total: HTMLElement; // Элемент для отображения итоговой суммы
+	protected _closeButton: HTMLButtonElement; // Кнопка закрытия
 
-    // Конструктор класса принимает контейнер и действия
-    constructor(container: HTMLElement, actions: ISuccessActions) {
-        super(container);  // Вызов конструктора родительского класса
+	// Конструктор класса Success
+	constructor(container: HTMLElement, protected actions?: ISuccessActions) {
+		super(container); // Вызов конструктора родительского класса
 
-        // Получение элементов кнопки закрытия и описания из контейнера
-        this._close = ensureElement('.order-success__close', this.container);
-        this._description = ensureElement('.order-success__description', this.container);
+		// Инициализация элементов: сумма заказа и кнопка закрытия
+		this._total = ensureElement<HTMLElement>(
+			'.order-success__description', // Селектор для суммы заказа
+			this.container // Контейнер, в котором ищем элемент
+		);
+		this._closeButton = ensureElement<HTMLButtonElement>(
+			'.order-success__close', // Селектор для кнопки закрытия
+			this.container
+		);
 
-        // Если переданы действия, добавляем обработчик клика на кнопку закрытия
-        if (actions?.onClick) {
-            this._close.addEventListener('click', actions.onClick);
-        }
-    }
+		// Если передано действие onClick, добавляем слушатель на кнопку закрытия
+		if (actions?.onClick)
+			this._closeButton.addEventListener('click', actions.onClick);
+	}
 
-    // Геттер для получения текста описания
-    get description(): string | null {
-        return this._description.textContent;  // Возвращает текстовое содержимое элемента
-    }
-
-    // Сеттер для установки текста описания
-    set description(value: string) {
-        // Устанавливает текст с указанным значением, добавляя префикс
-        this.setText(this._description, `Списано ${value} синапсов`);
-    }
+	// Устанавливаем текстовое значение для итоговой суммы заказа
+	set total(value: string) {
+		this.setText(this._total, value);
+	}
 }
