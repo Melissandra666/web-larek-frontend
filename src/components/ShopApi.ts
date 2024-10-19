@@ -1,38 +1,40 @@
-// Импортируем базовый класс API и типы данных, используемые в классе ShopAPI
-import { Api, ApiListResponse } from "./base/api";
-import { IProduct, IOrder, IOrderSuccess, IShopAPI } from "../types/index";
+import { IOrder, IOrderResult, IProductItem } from "../types";
+import { Api, ApiListResponse } from './base/api';
 
-// Класс ShopAPI расширяет функционал базового класса API и реализует интерфейс IShopAPI
-export class ShopAPI extends Api implements IShopAPI {
-	readonly cdn: string;  // Переменная для хранения адреса CDN (контентно-распределённой сети)
+// Интерфейс для API магазина
+export interface IShopApi {
+  // Метод для получения списка товаров
+  getProductItems: () => Promise<IProductItem[]>;
+  
+  // Метод для отправки заказа
+  order: (order: IOrder) => Promise<IOrderResult>;
+}
 
-	// Конструктор принимает базовый URL для API, URL для CDN и дополнительные опции для запросов
-	constructor(baseUrl: string, cdn: string, options?: RequestInit) {
-		super(baseUrl, options);  // Вызов конструктора родительского класса Api с передачей базового URL и опций
-		this.cdn = cdn;  // Сохранение URL CDN в переменную cdn
-	}
+// Класс, реализующий API магазина
+export class ShopApi extends Api implements IShopApi {
+  readonly cdn: string;  // Базовый URL для CDN
 
-	// Метод для получения списка продуктов с API
-	async getProductList(): Promise<IProduct[]> {
-		// Делаем GET-запрос к эндпоинту '/product', получаем список продуктов
-		return this.get('/product').then((data: ApiListResponse<IProduct>) =>
-			// Модифицируем каждый элемент списка, добавляя к ссылке на изображение адрес CDN
-			data.items.map((item) => ({
-				...item,
-				image: this.cdn + item.image  // Объединяем URL CDN и путь к изображению
-			}))
-		);
-	}
+  // Конструктор, принимающий URL для CDN и базовый URL API
+  constructor(cdn: string, baseUrl: string, options?: RequestInit) {
+    super(baseUrl, options);  // Инициализация базового API с URL и опциями
+    this.cdn = cdn;  // Присваиваем CDN URL
+  }
 
-	// Метод для получения информации о конкретном продукте по его ID
-	async getProduct(id: string): Promise<IProduct> {
-		// Делаем GET-запрос к эндпоинту с ID продукта и приводим ответ к типу IProduct
-		return (await this.get(`/product/${id}`)) as IProduct;
-	}
+  // Метод для получения списка товаров
+  getProductItems(): Promise<IProductItem[]> {
+    return this.get('/product')  // Делаем GET-запрос к /product
+      .then((data: ApiListResponse<IProductItem>) => 
+        // Преобразуем результат: добавляем CDN URL к изображениям товаров
+        data.items.map((item) => ({
+          ...item,  // Оставляем остальные данные без изменений
+          image: this.cdn + item.image  // Добавляем CDN URL к пути изображения
+        }))
+      );
+  }
 
-	// Метод для создания заказа
-	async createOrder(order: IOrder): Promise<IOrderSuccess> {
-		// Делаем POST-запрос с данными заказа к эндпоинту '/order' и возвращаем результат как IOrderSuccess
-		return (await this.post('/order', order)) as IOrderSuccess;
-	}
+  // Метод для отправки заказа
+  order(order: IOrder): Promise<IOrderResult> {
+    return this.post(`/order`, order)  // Делаем POST-запрос с данными заказа
+      .then((data: IOrderResult) => data);  // Возвращаем результат с сервера
+  }
 }
