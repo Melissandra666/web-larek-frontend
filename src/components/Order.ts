@@ -1,61 +1,62 @@
-// Импорт базового класса Form, вспомогательной функции ensureElement и интерфейса событий
-import { Form } from './common/Form';
-import { ensureElement } from '../utils/utils';
-import { IEvents } from '../components/base/events';
+import { Form } from './common/Form';  // Импортируем базовый класс формы
+import { IContactsForm, IDeliveryForm } from '../types';  // Интерфейсы для формы контактов и доставки
+import { IEvents } from './base/events';  // Интерфейс событий
+import { ensureAllElements } from '../utils/utils';  // Утилита для получения всех элементов
 
-// Интерфейс IOrderDetails описывает структуру данных для заказа (способ оплаты и адрес доставки)
-export interface IOrderDetails {
-  payment: string;  // Способ оплаты (наличные или карта)
-  address: string;  // Адрес доставки
-}
+// Класс Order расширяет функциональность базовой формы и включает как поля доставки, так и контактов
+export class Order extends Form<IDeliveryForm & IContactsForm> {
+	protected _payment: HTMLButtonElement[];  // Массив кнопок выбора способа оплаты
 
-// Интерфейс для действий, которые можно привязать к кнопкам формы заказа
-interface IOrderActions {
-  onClick: (event: MouseEvent) => void;  // Обработчик события клика
-}
+	// Конструктор принимает контейнер формы и объект событий
+	constructor(container: HTMLFormElement, events: IEvents) {
+		super(container, events);  // Вызываем конструктор базового класса Form
 
-// Класс Order расширяет базовый класс Form для работы с формой заказа
-export class Order extends Form<IOrderDetails> {
-  // Кнопки для выбора способа оплаты: карта и наличные
-  protected _card: HTMLButtonElement;  // Кнопка выбора оплаты картой
-  protected _cash: HTMLButtonElement;  // Кнопка выбора оплаты наличными
+		// Находим все кнопки с классом '.button_alt' в контейнере формы
+		this._payment = ensureAllElements<HTMLButtonElement>(
+			'.button_alt',
+			container
+		);
 
-  // Конструктор класса принимает контейнер формы, объект событий и действия для обработки событий клика
-  constructor(container: HTMLFormElement, events: IEvents, actions?: IOrderActions) {
-    super(container, events);  // Вызов конструктора родительского класса Form
+		// Добавляем обработчики событий для каждой кнопки выбора способа оплаты
+		this._payment.forEach((button) =>
+			button.addEventListener('click', () => this.selected(button.name))  // При клике выбирается способ оплаты
+		);
+	}
 
-    // Инициализация кнопок для выбора способа оплаты с помощью утилиты ensureElement
-    this._card = ensureElement<HTMLButtonElement>('button[name="card"]', this.container);  // Поиск кнопки "Карта"
-    this._cash = ensureElement<HTMLButtonElement>('button[name="cash"]', this.container);  // Поиск кнопки "Наличные"
+	// Сеттер для установки значения поля адреса
+	set address(value: string) {
+		// Устанавливаем значение в поле 'address' формы
+		(this.container.elements.namedItem('address') as HTMLInputElement).value =
+			value;
+	}
 
-    // Устанавливаем активный класс для кнопки "Карта" по умолчанию
-    this.toggleClass(this._card, 'button_alt-active');
+	// Сеттер для установки значения поля email
+	set email(value: string) {
+		// Устанавливаем значение в поле 'email' формы
+		(this.container.elements.namedItem('email') as HTMLInputElement).value =
+			value;
+	}
 
-    // Если передан обработчик клика, добавляем его на обе кнопки
-    if (actions?.onClick) {
-      this.addButtonClickHandler(actions.onClick);
-    }
-  }
+	// Сеттер для установки значения поля phone
+	set phone(value: string) {
+		// Устанавливаем значение в поле 'phone' формы
+		(this.container.elements.namedItem('phone') as HTMLInputElement).value =
+			value;
+	}
 
-  // Приватный метод для добавления обработчиков кликов на кнопки выбора оплаты
-  private addButtonClickHandler(onClick?: (event: MouseEvent) => void) {
-    if (onClick) {
-      // Привязываем обработчик к обеим кнопкам: картой и наличными
-      this._card.addEventListener('click', onClick);
-      this._cash.addEventListener('click', onClick);
-    }
-  }
+	// Сеттер для активации или деактивации кнопки отправки формы
+	set valid(value: boolean) {
+		// Если форма валидна, кнопка становится активной, иначе — неактивной
+		this._submit.disabled = !value;
+	}
 
-  // Сеттер для установки значения поля адреса доставки
-  set address(value: string) {
-    // Устанавливаем значение поля "address" в форме
-    (this.container.elements.namedItem('address') as HTMLInputElement).value = value;
-  }
-
-  // Метод для переключения активного состояния кнопок (выбора способа оплаты)
-  toggleButtons(toggleOn: HTMLElement) {
-    // Активируем одну кнопку и деактивируем другую, основываясь на том, какая была нажата
-    this.toggleClass(this._card, 'button_alt-active', toggleOn === this._card);
-    this.toggleClass(this._cash, 'button_alt-active', toggleOn === this._cash);
-  }
+	// Метод выбора способа оплаты
+	selected(name: string) {
+		// Перебираем все кнопки оплаты и добавляем/удаляем класс 'button_alt-active' в зависимости от выбранной
+		this._payment.forEach((button) =>
+			this.toggleClass(button, 'button_alt-active', button.name === name)
+		);
+		// Вызываем событие изменения способа оплаты с переданным именем
+		this.events.emit('order.payment:change', { name });
+	}
 }
